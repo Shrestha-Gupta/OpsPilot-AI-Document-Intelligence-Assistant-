@@ -4,6 +4,8 @@ Pipeline:
 User question -> Gemini Query Embedding -> Qdrant Vector Retrieval -> Context Assembly -> Groq LLM -> Response with Source Citations
 """
 import logging
+import html
+import re
 from typing import List, Dict, Any, Optional
 from groq import Groq
 
@@ -31,10 +33,11 @@ Answer formatting rules:
 7. Start with a short, direct answer or overview before detailed explanation when appropriate.
 8. Use clean Markdown for readability: headings, bold terms, bullet lists, numbered lists, and tables only when they genuinely improve clarity.
 9. Keep paragraphs short and scannable. Avoid unnecessary repetition of the user's question.
-10. For comparisons, prefer a concise Markdown table with clear column headers, followed by a short summary of the key similarities/differences.
-11. Use Markdown only. Never output raw HTML tags such as <br>, <div>, <p>, or <table>.
-12. Do not put Markdown table syntax inside code fences. Do not create a table when a simple bullet list is clearer.
-13. Do not include source citations as fabricated links or footnotes. Source document names and page numbers are supplied separately by OpsPilot.
+10. For comparisons, provide clearly labeled sections for each requested part: overview, key points, similarities, and differences. Use concise Markdown tables where useful.
+11. When the user explicitly asks for differences, always include a Differences section. Include only differences supported by the excerpts; if none are stated, say that the provided excerpts do not establish a clear difference.
+12. Use Markdown only. Never output raw HTML tags such as <br>, <div>, <p>, or <table>. Use normal Markdown bullets and paragraphs instead.
+13. Do not put Markdown table syntax inside code fences. Do not create a table when a simple bullet list is clearer.
+14. Do not include source citations as fabricated links or footnotes. Source document names and page numbers are supplied separately by OpsPilot.
 """
 
 
@@ -151,6 +154,10 @@ class RAGService:
                 max_tokens=self.settings.groq_max_tokens,
             )
             answer = completion.choices[0].message.content or ""
+            # Normalize HTML-escaped line-break tags occasionally emitted by the LLM.
+            for _ in range(2):
+                answer = html.unescape(answer)
+            answer = re.sub(r"<\s*br\s*/?\s*>", " · ", answer, flags=re.IGNORECASE)
         except Exception as e:
             logger.error(f"Groq completion failed: {e}")
             raise AppError(
