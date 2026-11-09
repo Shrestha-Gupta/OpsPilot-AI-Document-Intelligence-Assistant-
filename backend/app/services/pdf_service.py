@@ -41,6 +41,7 @@ class PDFService:
     def _ocr_page(page: pymupdf.Page, filename: str, page_number: int) -> str:
         """Render one PDF page and recognize its text using the local Tesseract engine."""
         try:
+            ocr_started = __import__("time").perf_counter()
             pix = page.get_pixmap(
                 matrix=pymupdf.Matrix(OCR_DPI_SCALE, OCR_DPI_SCALE),
                 colorspace=pymupdf.csGRAY,
@@ -50,12 +51,13 @@ class PDFService:
             text = pytesseract.image_to_string(
                 image,
                 lang=OCR_LANG,
-                config="--oem 3 --psm 3",
+                config="--oem 1 --psm 6",
             ).strip()
             logger.info(
-                "OCR completed for %s page %d | extracted_chars=%d | language=%s",
+                "OCR completed for %s page %d | duration=%.2fs | extracted_chars=%d | language=%s",
                 filename,
                 page_number,
+                __import__("time").perf_counter() - ocr_started,
                 len(text),
                 OCR_LANG,
             )
