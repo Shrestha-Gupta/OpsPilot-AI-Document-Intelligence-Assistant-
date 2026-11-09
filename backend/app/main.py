@@ -78,7 +78,7 @@ def create_app() -> FastAPI:
         title="OpsPilot V2 API",
         description="AI Document Intelligence Assistant",
         version="2.0.0",
-        docs_url="/docs" if settings.app_env == "development" else None,
+        docs_url="/docs",  # Enabled on the isolated OCR test service only.
         redoc_url=None,
         lifespan=lifespan,
     )
