@@ -188,7 +188,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
                 ),
               }}
             >
-              {message.content.replace(/<br\s*\/?\s*>/gi, '\n')}
+              {message.content.replace(/(?:<br\s*\/?\s*>|&lt;br\s*\/?\s*&gt;)/gi, ' · ')}
             </ReactMarkdown>
           ) : (
             <p className="whitespace-pre-wrap text-gray-100">{message.content}</p>
