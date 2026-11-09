@@ -223,7 +223,7 @@ async def get_suggestions(document_id: str = Path(..., description="Document UUI
     )
 
 
-@router.get("/upload-test", response_class=HTMLResponse, include_in_schema=False)
+@router.get("/upload-test/page", response_class=HTMLResponse, include_in_schema=False)
 async def upload_test_page():
     """Temporary browser-based upload page for the isolated OCR test service."""
     return HTMLResponse(
