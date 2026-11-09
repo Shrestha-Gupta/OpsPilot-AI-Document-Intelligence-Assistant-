@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     OPSPILOT_OCR_LANG=eng \
-    OPSPILOT_OCR_DPI_SCALE=1.5
+    OPSPILOT_OCR_DPI_SCALE=1.25
 
 # Install the Tesseract OCR engine and English language data.
 RUN apt-get update \
