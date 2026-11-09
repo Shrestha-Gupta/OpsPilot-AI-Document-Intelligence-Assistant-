@@ -12,6 +12,7 @@ import re
 import logging
 from typing import List
 from fastapi import APIRouter, UploadFile, File, BackgroundTasks, HTTPException, Path
+from fastapi.responses import HTMLResponse
 
 from app.config import get_settings
 from app.core.exceptions import AppError
@@ -155,6 +156,41 @@ async def list_documents():
         )
         for d in docs
     ]
+
+
+@router.get("/upload-test/page", response_class=HTMLResponse, include_in_schema=False)
+async def upload_test_page():
+    """Temporary browser-based upload page for isolated OCR testing."""
+    return """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OpsPilot OCR Upload Test</title>
+<style>
+body{font:16px system-ui;background:#111;color:#eee;max-width:760px;margin:50px auto;padding:24px}
+main{border:1px solid #444;border-radius:14px;padding:28px}button{background:#d99a3d;border:0;border-radius:8px;padding:12px 20px;font-weight:700;cursor:pointer}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#222;padding:16px;border-radius:8px}input{margin:18px 0}
+</style></head><body><main><h1>OpsPilot — OCR test</h1>
+<p>Select a scanned PDF and upload it to this isolated test service.</p>
+<form id="f"><input id="pdf" type="file" accept="application/pdf,.pdf" required><br><button>Upload PDF</button></form>
+<h3>Result</h3><pre id="out">Waiting for PDF…</pre></main>
+<script>
+const form=document.getElementById('f'),out=document.getElementById('out');
+form.addEventListener('submit',async e=>{
+ e.preventDefault();const file=document.getElementById('pdf').files[0];if(!file)return;
+ const data=new FormData();data.append('files',file);out.textContent='Uploading…';
+ try{
+  const res=await fetch('/api/v1/documents/upload',{method:'POST',body:data});
+  const body=await res.json();if(!res.ok){out.textContent=JSON.stringify(body,null,2);return;}
+  const doc=body.documents&&body.documents[0];if(!doc){out.textContent=JSON.stringify(body,null,2);return;}
+  out.textContent='Uploaded. Checking processing status…\\n'+JSON.stringify(doc,null,2);
+  for(let i=0;i<90;i++){
+   await new Promise(r=>setTimeout(r,2000));
+   const sr=await fetch('/api/v1/documents/'+doc.id+'/status');const status=await sr.json();
+   out.textContent=JSON.stringify(status,null,2);
+   if(status.status==='ready'||status.status==='failed')break;
+  }
+ }catch(err){out.textContent='Request failed: '+err.message;}
+});
+</script></body></html>"""
 
 
 @router.get("/{document_id}", response_model=DocumentResponse)
