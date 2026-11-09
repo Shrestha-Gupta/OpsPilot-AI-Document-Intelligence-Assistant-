@@ -12,7 +12,6 @@ import re
 import logging
 from typing import List
 from fastapi import APIRouter, UploadFile, File, BackgroundTasks, HTTPException, Path
-from fastapi.responses import HTMLResponse
 
 from app.config import get_settings
 from app.core.exceptions import AppError
@@ -220,51 +219,4 @@ async def get_suggestions(document_id: str = Path(..., description="Document UUI
         document_id=document_id,
         document_name=doc["original_name"],
         suggestions=suggestions,
-    )
-
-
-@router.get("/upload-test/page", response_class=HTMLResponse, include_in_schema=False)
-async def upload_test_page():
-    """Temporary browser-based upload page for the isolated OCR test service."""
-    return HTMLResponse(
-        """
-        <!doctype html>
-        <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>OpsPilot OCR Test Upload</title>
-          <style>
-            body{font:16px system-ui;max-width:680px;margin:10vh auto;padding:24px;background:#111;color:#eee}
-            main{border:1px solid #444;border-radius:14px;padding:28px}
-            input,button{font:inherit;margin-top:18px}
-            button{padding:12px 20px;background:#16a085;color:white;border:0;border-radius:8px;cursor:pointer}
-            pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#222;padding:16px;border-radius:8px}
-          </style>
-        </head>
-        <body><main>
-          <h1>OpsPilot — OCR test</h1>
-          <p>Select the scanned PDF you want to test. This page uploads to the OCR testing backend.</p>
-          <form id="upload-form">
-            <input type="file" name="files" accept="application/pdf,.pdf" multiple required>
-            <br><button type="submit">Upload PDF</button>
-          </form>
-          <h3>Result</h3><pre id="result">No file uploaded yet.</pre>
-        </main>
-        <script>
-          const form=document.getElementById('upload-form');
-          const result=document.getElementById('result');
-          form.addEventListener('submit',async event=>{
-            event.preventDefault();
-            const button=form.querySelector('button');
-            button.disabled=true; result.textContent='Uploading and starting processing...';
-            try{
-              const response=await fetch('/api/v1/documents/upload',{method:'POST',body:new FormData(form)});
-              const body=await response.json();
-              result.textContent=JSON.stringify(body,null,2);
-            }catch(error){result.textContent='Upload failed: '+error.message;}
-            finally{button.disabled=false;}
-          });
-        </script></body></html>
-        """
     )
