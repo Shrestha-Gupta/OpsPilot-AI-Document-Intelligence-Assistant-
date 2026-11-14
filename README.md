@@ -2,7 +2,7 @@
 
 > A production-oriented RAG assistant for asking questions across organizational PDFs, comparing information between documents, and tracing answers back to source pages.
 
-[Live Demo](https://frontend-rho-indol-98.vercel.app) · [GitHub Repository]((https://github.com/Shrestha-Gupta/OpsPilot-AI-Document-Intelligence-Assistant))
+[Live Demo](https://frontend-rho-indol-98.vercel.app) 
 
 ---
 
